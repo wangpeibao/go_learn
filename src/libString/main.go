@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"unicode"
 )
@@ -63,5 +64,60 @@ func main() {
 	// ToUpperSpecial 和 ToTitleSpecial 的功能实现和ToLowerSpecial相同
 	// Repeat n个字符串的联结
 	fmt.Println("3个abc", strings.Repeat("abc", 3))
+	// Replace 替换旧的字符串，n表示替换前几个，如果为-1则表示全部替换
+	fmt.Println(strings.Replace("aabbcc", "b", "B", 12))
+	// Map 也是一个替换的操作，针对unicode编码，通过函数的形式进行替换
+	f2 := func(r rune) rune {
+		return r + 1
+	}
+	fmt.Println(strings.Map(f2, "abcd"))
+	// Trim 相当于一个字符集删除操作，清楚cutset中所有在s一头一尾中的字符，中间的空格符不删除
+	fmt.Println(strings.Trim("abbcd", "abef"))
+	// TrimSpace 删除两端的空白字符，unicode.IsSpace包括'\t', '\n', '\v', '\f', '\r', ' ', 0x85, 0xA0
+	fmt.Println(strings.TrimSpace("\r \nab cd\n \t"))
+	// TrimFunc 删除两端符合方法返回true的字符
+	f3 := func(r rune) bool {
+		if r >= 'b' {
+			return true
+		} else {
+			return false
+		}
+	}
+	fmt.Println(strings.TrimFunc("abcd", f3))
+	// 其中TrimLeft, TrimRight, TrimLeftFunc, TrimRightFunc都和Trim, TrimFunc功能相似，只不过时左端，右端
+	// TrimPrefix, TrimSuffix，删除符合的前缀和后缀
+	// Fields, 返回以一个多连续多个空白字符分割的字符串数组
+	fmt.Println(strings.Fields("how old are you"))
+	// FieldsFunc 使用函数来认定分割字符串
+	f4 := func(r rune) bool {
+		if r >= 'd' {
+			return true
+		} else {
+			return false
+		}
+	}
+	fmt.Println(strings.FieldsFunc("abcda aefbaw", f4))
+	// Split 直接制定分隔符的分割,如果sep为空字符，Split会将s切分成每一个unicode码值一个字符串。
+	fmt.Println(strings.Split("a,b,,c", ","))
+	// SplitN的功能和Split一样，只是多了一个返回切片的数量
+	// SplitAfter 不会像Split把分隔符去掉而是在分隔符的后面分隔， SplitAfterN功能同上
+	// Join 将字符串数组连接到一个字符串，有连接符
+	a := []string{"123", "abc"}
+	fmt.Println(a, strings.Join(a, ""))
 
+	// 以下时Reader部分的
+	// Reader时strings库里面定义的一个字符串读取数据类型，包括字符串，当前字符下标以及上一个读取字符的下标
+	read := strings.NewReader("123456") // 创建一个Reader的指针数据类型
+	fmt.Println("剩余字节数", read.Len())    // 返回Reader中未被读取的长度
+	byte2, _ := read.ReadByte()         // 按字节读取字符串
+	fmt.Println(byte2)
+	fmt.Println("剩余字节数", read.Len())
+	_ = read.UnreadByte() // 实际上时一个回退操作，回到上次读取的位置
+	fmt.Println("剩余字节数", read.Len())
+	// ReadRune和UnreadRune的功能实现同上，只是使用unicode读取
+	// Seek, Reader查找位置的办法，偏移量和起始位置，并且将指针指到找到的位置
+	index, err1 := read.Seek(2, io.SeekStart)
+	fmt.Println(index, err1)
+	index, err1 = read.Seek(2, io.SeekCurrent)
+	fmt.Println(index, err1)
 }
